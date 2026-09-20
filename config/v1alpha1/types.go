@@ -19,7 +19,6 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	componentbaseconfigv1alpha1 "k8s.io/component-base/config/v1alpha1"
-	logsapi "k8s.io/component-base/logs/api/v1"
 )
 
 // KubeProxyIPTablesConfiguration contains iptables-related configuration
@@ -174,7 +173,7 @@ type KubeProxyConfiguration struct {
 	// logging specifies the options of logging.
 	// Refer to [Logs Options](https://github.com/kubernetes/component-base/blob/master/logs/options.go)
 	// for more information.
-	Logging logsapi.LoggingConfiguration `json:"logging,omitempty"`
+	Logging LoggingConfiguration `json:"logging,omitempty"`
 
 	// hostnameOverride, if non-empty, will be used as the name of the Node that
 	// kube-proxy is running on. If unset, the node name is assumed to be the same as
