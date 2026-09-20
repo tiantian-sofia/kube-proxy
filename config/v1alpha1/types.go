@@ -17,9 +17,12 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	componentbaseconfigv1alpha1 "k8s.io/component-base/config/v1alpha1"
-	logsapi "k8s.io/component-base/logs/api/v1"
 )
 
 // KubeProxyIPTablesConfiguration contains iptables-related configuration
@@ -174,7 +177,7 @@ type KubeProxyConfiguration struct {
 	// logging specifies the options of logging.
 	// Refer to [Logs Options](https://github.com/kubernetes/component-base/blob/master/logs/options.go)
 	// for more information.
-	Logging logsapi.LoggingConfiguration `json:"logging,omitempty"`
+	Logging LoggingConfiguration `json:"logging,omitempty"`
 
 	// hostnameOverride, if non-empty, will be used as the name of the Node that
 	// kube-proxy is running on. If unset, the node name is assumed to be the same as
@@ -268,3 +271,117 @@ type ProxyMode string
 
 // LocalMode represents modes to detect local traffic from the node
 type LocalMode string
+
+// LoggingConfiguration contains logging options.
+//
+// This is a local copy of k8s.io/component-base/logs/api/v1.LoggingConfiguration
+// with identical JSON serialization, defined here so that this API package does
+// not depend on the component-base logging stack (and its transitive
+// dependencies) merely for the type definition.
+type LoggingConfiguration struct {
+	// Format Flag specifies the structure of log messages.
+	// default value of format is `text`
+	Format string `json:"format,omitempty"`
+	// Maximum time between log flushes.
+	// If a string, parsed as a duration (i.e. "1s")
+	// If an int, the maximum number of nanoseconds (i.e. 1s = 1000000000).
+	// Ignored if the selected logging backend writes log messages without buffering.
+	FlushFrequency TimeOrMetaDuration `json:"flushFrequency"`
+	// Verbosity is the threshold that determines which log messages are
+	// logged. Default is zero which logs only the most important
+	// messages. Higher values enable additional messages. Error messages
+	// are always logged.
+	Verbosity VerbosityLevel `json:"verbosity"`
+	// VModule overrides the verbosity threshold for individual files.
+	// Only supported for "text" log format.
+	VModule VModuleConfiguration `json:"vmodule,omitempty"`
+	// [Alpha] Options holds additional parameters that are specific
+	// to the different logging formats. Only the options for the selected
+	// format get used, but all of them get validated.
+	// Only available when the LoggingAlphaOptions feature gate is enabled.
+	Options FormatOptions `json:"options,omitempty"`
+}
+
+// TimeOrMetaDuration is present only for backwards compatibility for the
+// flushFrequency field, and new fields should use metav1.Duration.
+type TimeOrMetaDuration struct {
+	// Duration holds the duration
+	Duration metav1.Duration
+	// SerializeAsString controls whether the value is serialized as a string or an integer
+	SerializeAsString bool `json:"-"`
+}
+
+func (t TimeOrMetaDuration) MarshalJSON() ([]byte, error) {
+	if t.SerializeAsString {
+		return t.Duration.MarshalJSON()
+	} else {
+		// Marshal as integer for backwards compatibility
+		return json.Marshal(t.Duration.Duration)
+	}
+}
+
+func (t *TimeOrMetaDuration) UnmarshalJSON(b []byte) error {
+	if len(b) > 0 && b[0] == '"' {
+		// string values unmarshal as metav1.Duration
+		t.SerializeAsString = true
+		return json.Unmarshal(b, &t.Duration)
+	}
+	t.SerializeAsString = false
+	if err := json.Unmarshal(b, &t.Duration.Duration); err != nil {
+		return fmt.Errorf("invalid duration %q: %w", string(b), err)
+	}
+	return nil
+}
+
+// FormatOptions contains options for the different logging formats.
+type FormatOptions struct {
+	// [Alpha] Text contains options for logging format "text".
+	// Only available when the LoggingAlphaOptions feature gate is enabled.
+	Text TextOptions `json:"text,omitempty"`
+	// [Alpha] JSON contains options for logging format "json".
+	// Only available when the LoggingAlphaOptions feature gate is enabled.
+	JSON JSONOptions `json:"json,omitempty"`
+}
+
+// TextOptions contains options for logging format "text".
+type TextOptions struct {
+	OutputRoutingOptions `json:""`
+}
+
+// JSONOptions contains options for logging format "json".
+type JSONOptions struct {
+	OutputRoutingOptions `json:""`
+}
+
+// OutputRoutingOptions contains options that are supported by both "text" and "json".
+type OutputRoutingOptions struct {
+	// [Alpha] SplitStream redirects error messages to stderr while
+	// info messages go to stdout, with buffering. The default is to write
+	// both to stdout, without buffering. Only available when
+	// the LoggingAlphaOptions feature gate is enabled.
+	SplitStream bool `json:"splitStream,omitempty"`
+	// [Alpha] InfoBufferSize sets the size of the info stream when
+	// using split streams. The default is zero, which disables buffering.
+	// Only available when the LoggingAlphaOptions feature gate is enabled.
+	InfoBufferSize resource.QuantityValue `json:"infoBufferSize,omitempty"`
+}
+
+// VModuleConfiguration is a collection of individual file names or patterns
+// and the corresponding verbosity threshold.
+type VModuleConfiguration []VModuleItem
+
+// VModuleItem defines verbosity for one or more files which match a certain
+// glob pattern.
+type VModuleItem struct {
+	// FilePattern is a base file name (i.e. minus the ".go" suffix and
+	// directory) or a "glob" pattern for such a name. It must not contain
+	// comma and equal signs because those are separators for the
+	// corresponding klog command line argument.
+	FilePattern string `json:"filePattern"`
+	// Verbosity is the threshold for log messages emitted inside files
+	// that match the pattern.
+	Verbosity VerbosityLevel `json:"verbosity"`
+}
+
+// VerbosityLevel represents a klog or logr verbosity threshold.
+type VerbosityLevel uint32

@@ -27,6 +27,16 @@ func (in DetectLocalConfiguration) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in FormatOptions) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.FormatOptions"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in JSONOptions) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.JSONOptions"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in KubeProxyConfiguration) OpenAPIModelName() string {
 	return "io.k8s.kube-proxy.config.v1alpha1.KubeProxyConfiguration"
 }
@@ -54,4 +64,29 @@ func (in KubeProxyNFTablesConfiguration) OpenAPIModelName() string {
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in KubeProxyWinkernelConfiguration) OpenAPIModelName() string {
 	return "io.k8s.kube-proxy.config.v1alpha1.KubeProxyWinkernelConfiguration"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in LoggingConfiguration) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.LoggingConfiguration"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in OutputRoutingOptions) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.OutputRoutingOptions"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in TextOptions) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.TextOptions"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in TimeOrMetaDuration) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.TimeOrMetaDuration"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in VModuleItem) OpenAPIModelName() string {
+	return "io.k8s.kube-proxy.config.v1alpha1.VModuleItem"
 }
