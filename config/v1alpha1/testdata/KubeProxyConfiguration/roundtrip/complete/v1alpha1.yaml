@@ -1,0 +1,80 @@
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+bindAddress: 192.168.1.10
+bindAddressHardFail: true
+clientConnection:
+  acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
+  burst: 25
+  contentType: application/vnd.kubernetes.protobuf
+  kubeconfig: /var/lib/kube-proxy/kubeconfig
+  qps: 12.5
+clusterCIDR: 10.244.0.0/16
+configSyncPeriod: 15m0s
+conntrack:
+  maxPerCore: 32768
+  min: 131072
+  tcpBeLiberal: true
+  tcpCloseWaitTimeout: 1h0m0s
+  tcpEstablishedTimeout: 24h0m0s
+  udpStreamTimeout: 5m0s
+  udpTimeout: 30s
+detectLocal:
+  bridgeInterface: cbr0
+  interfaceNamePrefix: veth
+detectLocalMode: ClusterCIDR
+enableProfiling: true
+featureGates:
+  KubeProxySomeFeature: true
+healthzBindAddress: 0.0.0.0:10256
+hostnameOverride: custom-node-name
+iptables:
+  localhostNodePorts: false
+  masqueradeAll: true
+  masqueradeBit: 14
+  minSyncPeriod: 5s
+  syncPeriod: 30s
+ipvs:
+  excludeCIDRs:
+  - 10.0.0.0/8
+  - 192.168.0.0/16
+  minSyncPeriod: 5s
+  scheduler: rr
+  strictARP: true
+  syncPeriod: 30s
+  tcpFinTimeout: 2m0s
+  tcpTimeout: 1h30m0s
+  udpTimeout: 3m0s
+kind: KubeProxyConfiguration
+logging:
+  flushFrequency: 5s
+  format: json
+  options:
+    json:
+      infoBufferSize: "0"
+      splitStream: true
+    text:
+      infoBufferSize: "0"
+      splitStream: true
+  verbosity: 3
+  vmodule:
+  - filePattern: kube-proxy
+    verbosity: 4
+metricsBindAddress: 127.0.0.1:10249
+mode: ipvs
+nftables:
+  masqueradeAll: true
+  masqueradeBit: 14
+  minSyncPeriod: 1s
+  syncPeriod: 30s
+nodePortAddresses:
+- 10.0.0.0/8
+- localhost
+oomScoreAdj: -999
+portRange: 30000-32767
+showHiddenMetricsForVersion: "1.30"
+windowsRunAsService: true
+winkernel:
+  enableDSR: true
+  forwardHealthCheckVip: true
+  networkName: vlan100
+  rootHnsEndpointName: kube-proxy
+  sourceVip: 10.0.0.2
